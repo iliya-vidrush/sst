@@ -383,7 +383,6 @@ func function(ctx context.Context, input input) {
 				delete(workers, info.WorkerID)
 				delete(nextChan, info.WorkerID)
 			}
-			break
 		case unknown := <-evts:
 			switch evt := unknown.(type) {
 			case *FunctionInvokedEvent:
@@ -438,7 +437,6 @@ func function(ctx context.Context, input input) {
 						restartOrDeferWorker(workerID, info)
 					}
 				}
-				break
 			}
 		}
 	}
