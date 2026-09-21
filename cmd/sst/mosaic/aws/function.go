@@ -273,6 +273,9 @@ func function(ctx context.Context, input input) {
 					Line:       line,
 				})
 			}
+			if err := scanner.Err(); err != nil {
+				log.Error("failed to read worker logs", "error", err, "workerID", workerID, "functionID", functionID)
+			}
 			workerShutdownChan <- info
 		}()
 		workers[workerID] = info
