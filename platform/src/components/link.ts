@@ -109,43 +109,40 @@ export namespace Link {
     );
   }
 
+  export function assertLinkable(obj: unknown): asserts obj is Linkable {
+    if (obj === undefined)
+      throw new VisibleError(
+        "An undefined link was passed into a `link` array.",
+      );
+    if (!isLinkable(obj))
+      throw new VisibleError(
+        "An invalid resource was passed into a `link` array. Use `sst.Linkable` or `sst.Linkable.wrap()` to make it linkable.",
+      );
+  }
+
   export function build(links: any[]) {
-    return links
-      .map((link) => {
-        if (!link)
-          throw new VisibleError(
-            "An undefined link was passed into a `link` array.",
-          );
-        return link;
-      })
-      .filter((l) => isLinkable(l))
-      .map((l: Linkable) => {
-        const link = l.getSSTLink();
-        return all([l.urn, link]).apply(([urn, link]) => ({
-          name: urn.split("::").at(-1)!,
-          properties: {
-            ...link.properties,
-            type: normalizeType(urn.split("::").at(-2)!),
-          },
-        }));
-      });
+    return links.map((l) => {
+      assertLinkable(l);
+      const link = l.getSSTLink();
+      return all([l.urn, link]).apply(([urn, link]) => ({
+        name: urn.split("::").at(-1)!,
+        properties: {
+          ...link.properties,
+          type: normalizeType(urn.split("::").at(-2)!),
+        },
+      }));
+    });
   }
 
   export function getProperties(links?: Input<any[]>) {
     const linkProperties = output(links ?? []).apply((links) =>
-      links
-        .map((link) => {
-          if (!link)
-            throw new VisibleError(
-              "An undefined link was passed into a `link` array.",
-            );
-          return link;
-        })
-        .filter((l) => isLinkable(l))
-        .map((l: Linkable) => ({
+      links.map((l) => {
+        assertLinkable(l);
+        return {
           urn: l.urn,
           properties: l.getSSTLink().properties,
-        })),
+        };
+      }),
     );
 
     return output(linkProperties).apply((e) =>
@@ -185,7 +182,8 @@ export namespace Link {
   ): Output<T[]> {
     if (!input) return output([]);
     return output(input).apply((links) => {
-      return links.filter(isLinkable).flatMap((l: Linkable) => {
+      return links.flatMap((l) => {
+        assertLinkable(l);
         const link = l.getSSTLink();
         return (link.include || []).filter((i) => i.type === type) as T[];
       });
