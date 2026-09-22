@@ -99,8 +99,14 @@ export namespace Link {
     getSSTLink(): Definition;
   }
 
-  export function isLinkable(obj: any): obj is Linkable {
-    return "getSSTLink" in obj;
+  export function isLinkable(obj: unknown): obj is Linkable {
+    if (typeof obj !== "object" || obj === null) return false;
+
+    const candidate = obj as Linkable;
+    return (
+      typeof candidate.getSSTLink === "function" &&
+      Output.isInstance(candidate.urn)
+    );
   }
 
   export function build(links: any[]) {
