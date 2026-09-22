@@ -36,7 +36,7 @@ export namespace Link {
         {},
       );
       this.registerOutputs({
-        target: target,
+        target,
         include,
         properties: {
           type: normalizeType(type),
